@@ -17,6 +17,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from retrieval import hybrid_query
+
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parent
@@ -80,7 +82,7 @@ def main() -> int:
         w.writeheader()
         for q in questions:
             text = q["question"]
-            res = col.query(query_texts=[text], n_results=args.top_k)
+            res = hybrid_query(col, text, args.top_k)
             docs = (res.get("documents") or [[]])[0]
             metas = (res.get("metadatas") or [[]])[0]
             top_doc = (metas[0] or {}).get("doc_id", "") if metas else ""
