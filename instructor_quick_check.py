@@ -20,6 +20,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 
+def _configure_utf8_console() -> None:
+    """Keep Vietnamese output printable on Windows CP1252 consoles."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def _load_jsonl(path: Path) -> List[Dict[str, Any]]:
     lines: List[Dict[str, Any]] = []
     with path.open(encoding="utf-8") as f:
@@ -104,6 +112,7 @@ def check_manifest(path: Path) -> Tuple[int, List[str]]:
 
 
 def main() -> int:
+    _configure_utf8_console()
     p = argparse.ArgumentParser(description="Day 10 lab — quick artifact checks for instructors")
     root = Path(__file__).resolve().parent
     p.add_argument(
