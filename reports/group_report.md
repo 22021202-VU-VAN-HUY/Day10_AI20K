@@ -1,6 +1,6 @@
 # Báo Cáo Nhóm — Lab Day 10: Data Pipeline & Data Observability
 
-**Tên nhóm:** Day10 AI20K
+**Tên nhóm:** WinFlow
 **Thành viên:**
 | Tên | Vai trò (Day 10) | Email |
 |-----|------------------|-------|
@@ -11,7 +11,7 @@
 | Kiên | Docs / Report Owner | Chưa cung cấp |
 
 **Ngày nộp:** 2026-06-10
-**Repo:** `Day10_AI20K`
+**Repo:** `https://github.com/22021202-VU-VAN-HUY/Day10_AI20K.git`
 **Độ dài khuyến nghị:** 600–1000 từ
 
 ---
