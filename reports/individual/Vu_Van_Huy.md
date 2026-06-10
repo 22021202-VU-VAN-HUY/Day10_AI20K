@@ -1,6 +1,6 @@
 # Báo Cáo Cá Nhân - Lab Day 10
 
-**Họ và tên:** Huy  
+**Họ và tên:** Vũ Văn Huy
 **Mã học viên:** 2A202600750  
 **Vai trò:** Monitoring / Freshness Owner  
 **Ngày nộp:** 2026-06-10
