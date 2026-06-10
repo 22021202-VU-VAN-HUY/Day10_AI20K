@@ -8,7 +8,10 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, List, Tuple
+
+from transform.cleaning_rules import ALLOWED_DOC_IDS
 
 
 @dataclass
@@ -55,7 +58,11 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         r
         for r in cleaned_rows
         if r.get("doc_id") == "policy_refund_v4"
-        and "14 ngày làm việc" in (r.get("chunk_text") or "")
+        and re.search(
+            r"\b14\s+ngày(?:\s+làm\s+việc)?\b",
+            r.get("chunk_text") or "",
+            re.IGNORECASE,
+        )
     ]
     ok3 = len(bad_refund) == 0
     results.append(
@@ -100,7 +107,11 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         r
         for r in cleaned_rows
         if r.get("doc_id") == "hr_leave_policy"
-        and "10 ngày phép năm" in (r.get("chunk_text") or "")
+        and re.search(
+            r"\b10\s+ngày(?:\s+làm\s+việc)?\s+phép\s+năm\b",
+            r.get("chunk_text") or "",
+            re.IGNORECASE,
+        )
     ]
     ok6 = len(bad_hr_annual) == 0
     results.append(
@@ -109,6 +120,87 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
             ok6,
             "halt",
             f"violations={len(bad_hr_annual)}",
+        )
+    )
+
+    # E7: only registered sources may be published.
+    unknown_docs = sorted(
+        {
+            (r.get("doc_id") or "").strip()
+            for r in cleaned_rows
+            if (r.get("doc_id") or "").strip() not in ALLOWED_DOC_IDS
+        }
+    )
+    results.append(
+        ExpectationResult(
+            "only_registered_doc_ids",
+            not unknown_docs,
+            "halt",
+            f"unknown_doc_ids={unknown_docs}",
+        )
+    )
+
+    # E8: a complete snapshot contains every canonical source.
+    present_docs = {(r.get("doc_id") or "").strip() for r in cleaned_rows}
+    missing_docs = sorted(ALLOWED_DOC_IDS - present_docs)
+    results.append(
+        ExpectationResult(
+            "all_canonical_sources_present",
+            not missing_docs,
+            "halt",
+            f"missing_doc_ids={missing_docs}",
+        )
+    )
+
+    # E9: transformations must not create duplicate published content.
+    seen_content: set[Tuple[str, str]] = set()
+    duplicate_content = 0
+    for row in cleaned_rows:
+        identity = (
+            (row.get("doc_id") or "").strip(),
+            " ".join((row.get("chunk_text") or "").strip().lower().split()),
+        )
+        if identity in seen_content:
+            duplicate_content += 1
+        seen_content.add(identity)
+    results.append(
+        ExpectationResult(
+            "no_duplicate_doc_content",
+            duplicate_content == 0,
+            "halt",
+            f"duplicate_rows={duplicate_content}",
+        )
+    )
+
+    # E10: chunk_id is the idempotency key and must be non-empty and unique.
+    chunk_ids = [(r.get("chunk_id") or "").strip() for r in cleaned_rows]
+    duplicate_ids = len(chunk_ids) - len(set(chunk_ids))
+    empty_ids = sum(not chunk_id for chunk_id in chunk_ids)
+    results.append(
+        ExpectationResult(
+            "unique_non_empty_chunk_id",
+            duplicate_ids == 0 and empty_ids == 0,
+            "halt",
+            f"duplicate_ids={duplicate_ids}, empty_ids={empty_ids}",
+        )
+    )
+
+    # E11: exported_at follows the cleaned data contract.
+    invalid_exported_at = 0
+    for row in cleaned_rows:
+        value = (row.get("exported_at") or "").strip()
+        try:
+            datetime.fromisoformat(value.replace("Z", "+00:00"))
+            valid = "T" in value
+        except ValueError:
+            valid = False
+        invalid_exported_at += int(not valid)
+    results.append(
+        ExpectationResult(
+            "exported_at_iso_datetime",
+            invalid_exported_at == 0,
+            "halt",
+            f"invalid_exported_at_rows={invalid_exported_at}",
         )
     )
 
