@@ -40,6 +40,14 @@ QUAR_DIR = ART / "quarantine"
 CLEAN_DIR = ART / "cleaned"
 
 
+def _configure_utf8_console() -> None:
+    """Keep Vietnamese logs printable on Windows legacy consoles."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def _log(path: Path, line: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as f:
@@ -189,6 +197,7 @@ def cmd_freshness(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
+    _configure_utf8_console()
     parser = argparse.ArgumentParser(description="Day 10 ETL pipeline")
     sub = parser.add_subparsers(dest="command", required=True)
 
