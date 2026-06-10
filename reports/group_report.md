@@ -2,12 +2,12 @@
 
 **Tên nhóm:** Day10 AI20K
 **Thành viên:**
-| Tên | Vai trò (Day 10) | Mã học viên |
-|-----|------------------|--------------|
+| Tên | Vai trò (Day 10) | Email |
+|-----|------------------|-------|
 | Kiệt | Ingestion / Raw Owner | Chưa cung cấp |
 | Bảo | Cleaning & Quality Owner | Chưa cung cấp |
 | Sỹ | Embed & Idempotency Owner | Chưa cung cấp |
-| Huy | Monitoring / Freshness Owner | 2A202600750 |
+| Huy | Monitoring / Freshness Owner | Chưa cung cấp |
 | Kiên | Docs / Report Owner | Chưa cung cấp |
 
 **Ngày nộp:** 2026-06-10
